@@ -1,0 +1,27 @@
+{
+  "name": "clip-joining",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node --esm ./index.ts",
+    "download": "ts-node --esm ./download.ts",
+    "probe": "ts-node --esm ./probe.ts",
+    "stream": "ts-node --esm ./stream.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@twurple/api": "^6.2.0",
+    "@twurple/auth": "^6.2.0",
+    "@types/fluent-ffmpeg": "^2.1.21",
+    "fluent-ffmpeg": "^2.1.2"
+  }
+}
