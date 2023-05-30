@@ -1,3 +1,4 @@
+console.time("Execution time");
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
@@ -44,6 +45,8 @@ async function concatenateVideos(filePaths: string[]) {
     })
     .on("end", () => {
       console.log("Videos concatenated successfully!");
+
+      console.timeEnd("Execution time");
     })
     .on("progress", (progress) => {
       const currentSeconds = getSeconds(progress.timemark);
@@ -54,7 +57,6 @@ async function concatenateVideos(filePaths: string[]) {
     .audioCodec("libmp3lame")
     .format("mp4")
     // .outputOptions("-b:v 1000k") // Lower bitrate
-    // .outputOptions("-r 20") // Lower frame rate
     .outputOptions("-preset ultrafast") // Faster encoding
     .mergeToFile(outputFilePath, tempFolderPath);
 }
