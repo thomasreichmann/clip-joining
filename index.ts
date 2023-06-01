@@ -45,12 +45,17 @@ async function concatenateVideos(filePaths: string[]) {
   );
 
   // Resize videos using Promise.all
-  const resizePromises = filePaths.map((filePath, index) => {
-    if (resizeChecks[index]) {
-      return resizeVideo(filePath);
-    }
-  });
-  await Promise.all(resizePromises);
+  const batchSize = 5;
+  for (let i = 0; i < filePaths.length; i += batchSize) {
+    const batch = filePaths.slice(i, i + batchSize);
+    const batchResizeChecks = resizeChecks.slice(i, i + batchSize);
+    const resizePromises = batch.map((filePath, index) => {
+      if (batchResizeChecks[index]) {
+        return resizeVideo(filePath);
+      }
+    });
+    await Promise.all(resizePromises);
+  }
 
   const ffmpegCommand = ffmpeg();
   filePaths.forEach((filePath) => {
