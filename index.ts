@@ -43,6 +43,9 @@ async function concatenateVideos(filePaths: string[]) {
     .on("error", (err) => {
       console.error("Error concatenating videos:", err);
     })
+    .on("stderr", (stderrLine) => {
+      console.log("Stderr output: " + stderrLine);
+    })
     .on("end", () => {
       console.log("Videos concatenated successfully!");
 
