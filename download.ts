@@ -1,5 +1,6 @@
 import { ApiClient, HelixClip } from "@twurple/api";
 import { AppTokenAuthProvider } from "@twurple/auth";
+import "dotenv/config";
 import fs from "fs";
 import fetch from "node-fetch";
 import { pipeline } from "stream";
@@ -7,11 +8,13 @@ import { promisify } from "util";
 
 const streamPipeline = promisify(pipeline);
 
-const clientId = "vj1bfayrqg0ag3gjhex95wbokkbkt2";
-const clientSecret = "xcz68xfdre64hbqp31b2mmv8p3fpyd";
+const clientId = process.env.TWITCH_CLIENT_ID ?? "";
+const clientSecret = process.env.TWITCH_CLIENT_SECRET ?? "";
 
 const authProvider = new AppTokenAuthProvider(clientId, clientSecret);
 const api = new ApiClient({ authProvider });
+
+const maxVideosToDownload = 20;
 
 async function downloadClip(clip: HelixClip, i: number, totalClips: number) {
   const downloadUrl = clip.thumbnailUrl.replace("-preview-480x272.jpg", ".mp4");
@@ -37,27 +40,47 @@ async function downloadClips() {
     .getClipsForGamePaginated("21779", { startDate: new Date().toISOString() })
     .getNext();
 
-  // create a directory to store the clips if it doesn't exist
+  // Create a directory to store the clips if it doesn't exist
   if (!fs.existsSync("./clips")) {
     fs.mkdirSync("./clips");
   }
 
-  // control number of concurrent downloads
+  // Control number of concurrent downloads
   const maxConcurrentDownloads = 5;
-  const clipChunks = Array(Math.ceil(page.length / maxConcurrentDownloads))
+
+  const clipChunks = Array(
+    Math.ceil(maxVideosToDownload / maxConcurrentDownloads)
+  )
     .fill(0)
     .map((_, index) => index * maxConcurrentDownloads)
     .map((begin) => page.slice(begin, begin + maxConcurrentDownloads));
 
+  let downloadedCount = 0;
+
   for (let i = 0; i < clipChunks.length; i++) {
+    if (downloadedCount >= maxVideosToDownload) {
+      break;
+    }
     await Promise.all(
-      clipChunks[i].map((clip, j) =>
-        downloadClip(clip, i * maxConcurrentDownloads + j, page.length)
-      )
+      clipChunks[i].map((clip, j) => {
+        if (downloadedCount >= maxVideosToDownload) {
+          return;
+        }
+        downloadedCount++;
+        return downloadClip(
+          clip,
+          i * maxConcurrentDownloads + j,
+          maxVideosToDownload
+        );
+      })
     );
   }
 }
 
-downloadClips().catch(console.error);
+console.time("total");
+
+downloadClips()
+  .then(() => console.timeEnd("total"))
+  .catch(console.error);
 
 export {};

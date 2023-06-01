@@ -2,3 +2,4 @@ node_modules
 temp
 clips
 output.mp4
+.env
