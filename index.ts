@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const folderPath = path.resolve("./clips");
+// TODO: make sure temp folder exists
 const tempFolderPath = path.resolve("./temp");
 const filePaths: string[] = [];
 
